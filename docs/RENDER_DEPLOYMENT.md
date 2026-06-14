@@ -1,6 +1,8 @@
 # Render Backend Deployment
 
-This repo includes `render.yaml`, so Render can create the FastAPI web service and PostgreSQL database from the GitHub repository.
+This repo includes `render.yaml`, so Render can create the FastAPI web service from the GitHub repository.
+
+For a no-payment setup, use Neon Free Postgres for the database and paste the Neon connection string into Render as `DATABASE_URL`.
 
 ## Steps
 
@@ -9,7 +11,10 @@ This repo includes `render.yaml`, so Render can create the FastAPI web service a
 3. Choose **New > Blueprint**.
 4. Connect the GitHub repository.
 5. Select this repo and apply the blueprint.
-6. After deploy, open the backend URL:
+6. Render will ask for `DATABASE_URL` and `ALLOWED_ORIGINS`.
+7. Use a Neon Free Postgres connection string for `DATABASE_URL`.
+8. Use your Vercel frontend URL for `ALLOWED_ORIGINS`.
+9. After deploy, open the backend URL:
 
 ```text
 https://YOUR_RENDER_SERVICE.onrender.com/docs
@@ -30,6 +35,18 @@ ALLOWED_ORIGINS=https://YOUR_VERCEL_APP.vercel.app,http://localhost:5173,http://
 ```
 
 Then redeploy/restart the Render service.
+
+## Free Neon Database
+
+1. Go to Neon and create a free Postgres project.
+2. Copy the pooled connection string.
+3. In Render, set:
+
+```env
+DATABASE_URL=postgresql://USER:PASSWORD@HOST.neon.tech/DBNAME?sslmode=require
+```
+
+The backend converts this to the SQLAlchemy `psycopg` driver internally.
 
 ## Vercel Frontend Setting
 
