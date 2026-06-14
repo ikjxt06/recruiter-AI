@@ -19,6 +19,14 @@ class Settings(BaseSettings):
     allowed_origins: str = "http://localhost:5173"
 
     @property
+    def sqlalchemy_database_url(self) -> str:
+        if self.database_url.startswith("postgres://"):
+            return self.database_url.replace("postgres://", "postgresql+psycopg://", 1)
+        if self.database_url.startswith("postgresql://"):
+            return self.database_url.replace("postgresql://", "postgresql+psycopg://", 1)
+        return self.database_url
+
+    @property
     def upload_path(self) -> Path:
         path = Path(self.upload_dir)
         path.mkdir(parents=True, exist_ok=True)

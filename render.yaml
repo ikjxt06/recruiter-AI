@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: talentiq-ai-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements-lite.txt
+    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: APP_NAME
+        value: TalentIQ AI
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "720"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: talentiq-ai-db
+          property: connectionString
+      - key: CHROMA_PATH
+        value: ./.chroma
+      - key: UPLOAD_DIR
+        value: ./uploads
+      - key: GEMINI_MODEL
+        value: gemini-1.5-flash
+      - key: ALLOWED_ORIGINS
+        value: http://localhost:5173
+
+databases:
+  - name: talentiq-ai-db
+    databaseName: talentiq
+    user: talentiq
