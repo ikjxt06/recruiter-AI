@@ -46,7 +46,7 @@ async def upload_resumes(files: list[UploadFile] = File(...), db: Session = Depe
         db.flush()
         try:
             get_vector_store().upsert_candidate(candidate.id, raw_text[:8000], {"name": candidate.name or "", "skills": ", ".join(candidate.skills)})
-        except ImportError:
+        except Exception:
             get_lightweight_vector_store().upsert_candidate(candidate.id, raw_text[:8000], {"name": candidate.name or "", "skills": ", ".join(candidate.skills)})
         created.append(candidate.id)
     db.commit()

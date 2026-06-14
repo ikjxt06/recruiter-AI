@@ -11,3 +11,14 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("talentiq_token");
+      window.dispatchEvent(new Event("talentiq:logout"));
+    }
+    return Promise.reject(error);
+  }
+);

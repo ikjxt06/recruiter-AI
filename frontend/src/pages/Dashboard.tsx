@@ -12,6 +12,8 @@ export function Dashboard() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"all" | CandidateStatus>("all");
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+  const [message, setMessage] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   async function load() {
     const [statsResponse, candidateResponse] = await Promise.all([
@@ -25,10 +27,20 @@ export function Dashboard() {
   async function upload(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
     if (!files.length) return;
+    setMessage("");
+    setUploading(true);
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
-    await api.post("/candidates/upload", formData);
-    await load();
+    try {
+      const { data } = await api.post("/candidates/upload", formData);
+      setMessage(`Uploaded ${data.processed} resume${data.processed === 1 ? "" : "s"}.`);
+      await load();
+    } catch (error: any) {
+      setMessage(error.response?.data?.detail ?? error.message ?? "Upload failed");
+    } finally {
+      setUploading(false);
+      event.target.value = "";
+    }
   }
 
   async function downloadReport() {
@@ -69,7 +81,7 @@ export function Dashboard() {
           </div>
           <div className="flex items-center gap-2">
             <label className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-md bg-ink px-4 text-sm font-medium text-white">
-              <Upload size={16} /> Upload Resumes
+              <Upload size={16} /> {uploading ? "Uploading..." : "Upload Resumes"}
               <input className="hidden" type="file" multiple accept=".pdf,.docx" onChange={upload} />
             </label>
             <button className="inline-flex h-10 items-center gap-2 rounded-md border border-slate-200 px-4 text-sm" onClick={downloadReport}>
@@ -79,6 +91,11 @@ export function Dashboard() {
         </div>
       </header>
       <section className="mx-auto max-w-7xl px-6 py-6">
+        {message ? (
+          <div className="mb-4 rounded-md border border-slate-200 bg-white px-4 py-3 text-sm text-steel shadow-sm">
+            {message}
+          </div>
+        ) : null}
         <div className="grid gap-4 md:grid-cols-4">
           <StatCard label="Total Candidates" value={stats?.total_candidates ?? 0} />
           <StatCard label="Average Match" value={`${stats?.average_match_score ?? 0}%`} />
